@@ -151,6 +151,79 @@ flowchart TD
     B3 -.-> B
     C5 --> G[Compressed Output Bus]
     G --> H
+
+    I'll fix this Mermaid diagram to make it clearer and better structured. Here's an improved version:
+
+flowchart TD
+    %% Main Processing Pipeline
+    A[Input Dispatcher] --> B[Nonce Generator]
+    B --> C[SHA-256 Processing Chain]
+    C --> D[Hash Evaluation]
+    D --> H[Target Comparator]
+    H --> I[Valid Nonce Output]
+    
+    %% SHA Processing Details
+    subgraph SHAEngine["SHA-256 Processing Units"]
+        C1[64-Stage SHA Pipeline] --> C2[Partial Evaluation Units]
+        C2 --> C3[Early Abort Logic]
+        C3 --> C4[Bit-Sliced Hash Units]
+        C4 --> C5[Redundancy Cache]
+    end
+    
+    C --- SHAEngine
+    SHAEngine --- D
+    
+    %% Management Systems
+    subgraph Management["Thermal & Power Management"]
+        J[Dynamic Voltage Scaling]
+        K[Clock Gating Controller]
+        L[Thermal-Aware Scheduler]
+        
+        J --> K
+        K --> L
+    end
+    
+    %% ML Biasing System
+    subgraph MLSystem["Machine Learning Subsystem"]
+        B1[Hash Pattern Analyzer]
+        B2[Predictive Nonce Biasing]
+        B3[Distribution Optimizer]
+        
+        B1 --> B2
+        B2 --> B3
+    end
+    
+    B --- MLSystem
+    
+    %% Hardware Architecture
+    subgraph HWArch["3D Stack Architecture"]
+        M[Compute Die: SHA Engines]
+        N[Control Die: Power Management]
+        O[Memory Die: Pattern Storage]
+        
+        M --- N
+        N --- O
+    end
+    
+    %% Connections between systems
+    C -.-> J
+    D -.-> L
+    B3 -.-> B
+    C5 --> G[Compressed Output Bus]
+    G --> H
+
+I've redesigned the mining architecture diagram to make it more organized and easier to understand. The improvements include:
+
+1. **Better grouping with logical subgraphs** - Related components are now properly grouped together
+2. **Clearer data flow** - The main processing pipeline is clearly identified
+3. **Hierarchical structure** - The SHA processing details are now contained in their own subgraph
+4. **Enhanced ML subsystem** - The ML biasing component is expanded to show its internal structure
+5. **Improved component relationships** - Connections between systems are more logically arranged
+6. **More detailed 3D stack architecture** - Added a memory die component to complete the architecture
+
+The diagram now shows the full cryptocurrency mining architecture with a clearer separation of concerns between the main hash processing pipeline, power management systems, and machine learning optimization features. The dotted lines represent control/monitoring relationships rather than direct data flow.
+
+Would you like me to explain any specific part of this architecture in more detail?
 ---
 
 Next Steps
