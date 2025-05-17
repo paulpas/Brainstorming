@@ -94,32 +94,42 @@ Data Bus Compression	Compress bit-switching in buses before final check	Lowers s
 
 Mermaid Diagram: Advanced ASIC Architecture
 
-graph TD
-  A[Input Dispatcher] --> B[Nonce Generator with ML Biasing]
-  B --> C[SHA-256 FSM Chain]
-  C --> D[Early Abort Logic (Partial Evaluation)]
-  D --> E[Bit-Sliced Hash Execution Units]
-  E --> F[Redundancy Elimination Cache]
-  F --> G[Compressed Output Bus]
-  G --> H[Target Comparator]
-  H --> I[Valid Nonce Handler]
+flowchart TD
+    A[Input Dispatcher]
+    B[Nonce Generator with ML Biasing]
+    C[SHA-256 FSM Chain (64-stage Pipeline)]
+    D[Early Abort Logic]
+    E[Bit-Sliced Hash Execution Units]
+    F[Redundancy Elimination Cache]
+    G[Compressed Output Bus]
+    H[Target Comparator]
+    I[Valid Nonce Handler]
 
-  subgraph Thermal & Power Management
-    J[Dynamic Voltage Scaling]
-    K[Clock Gating Controller]
-    L[Thermal-Aware Core Scheduler]
-  end
+    subgraph Power & Thermal Mgmt
+        J[Dynamic Voltage Scaling]
+        K[Clock Gating Controller]
+        L[Thermal-Aware Scheduler]
+    end
 
-  C --> J
-  C --> K
-  E --> L
+    subgraph 3D Stacked ASIC
+        M[SHA Compute Die]
+        N[Control & Power Die]
+    end
 
-  subgraph Stack Design
-    M[SHA-256 Compute Die]
-    N[Control/Power Plane Die]
-  end
-  M --> N
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
 
+    C --> J
+    C --> K
+    E --> L
+
+    M --> N
 
 ---
 
