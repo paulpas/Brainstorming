@@ -95,42 +95,62 @@ Data Bus Compression	Compress bit-switching in buses before final check	Lowers s
 Mermaid Diagram: Advanced ASIC Architecture
 
 flowchart TD
-    A[Input Dispatcher]
-    B[Nonce Generator with ML Biasing]
-    C[SHA-256 FSM Chain (64-stage Pipeline)]
-    D[Early Abort Logic]
-    E[Bit-Sliced Hash Execution Units]
-    F[Redundancy Elimination Cache]
-    G[Compressed Output Bus]
-    H[Target Comparator]
-    I[Valid Nonce Handler]
-
-    subgraph Power & Thermal Mgmt
+    %% Main Processing Pipeline
+    A[Input Dispatcher] --> B[Nonce Generator]
+    B --> C[SHA-256 Processing Chain]
+    C --> D[Hash Evaluation]
+    D --> H[Target Comparator]
+    H --> I[Valid Nonce Output]
+    
+    %% SHA Processing Details
+    subgraph SHAEngine["SHA-256 Processing Units"]
+        C1[64-Stage SHA Pipeline] --> C2[Partial Evaluation Units]
+        C2 --> C3[Early Abort Logic]
+        C3 --> C4[Bit-Sliced Hash Units]
+        C4 --> C5[Redundancy Cache]
+    end
+    
+    C --- SHAEngine
+    SHAEngine --- D
+    
+    %% Management Systems
+    subgraph Management["Thermal & Power Management"]
         J[Dynamic Voltage Scaling]
         K[Clock Gating Controller]
         L[Thermal-Aware Scheduler]
+        
+        J --> K
+        K --> L
     end
-
-    subgraph 3D Stacked ASIC
-        M[SHA Compute Die]
-        N[Control & Power Die]
+    
+    %% ML Biasing System
+    subgraph MLSystem["Machine Learning Subsystem"]
+        B1[Hash Pattern Analyzer]
+        B2[Predictive Nonce Biasing]
+        B3[Distribution Optimizer]
+        
+        B1 --> B2
+        B2 --> B3
     end
-
-    A --> B
-    B --> C
-    C --> D
-    D --> E
-    E --> F
-    F --> G
+    
+    B --- MLSystem
+    
+    %% Hardware Architecture
+    subgraph HWArch["3D Stack Architecture"]
+        M[Compute Die: SHA Engines]
+        N[Control Die: Power Management]
+        O[Memory Die: Pattern Storage]
+        
+        M --- N
+        N --- O
+    end
+    
+    %% Connections between systems
+    C -.-> J
+    D -.-> L
+    B3 -.-> B
+    C5 --> G[Compressed Output Bus]
     G --> H
-    H --> I
-
-    C --> J
-    C --> K
-    E --> L
-
-    M --> N
-
 ---
 
 Next Steps
