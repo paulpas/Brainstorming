@@ -459,4 +459,78 @@ async def reason(symbol: str, payload: dict):
     if cached:
         return json.loads(cached)
 
-    prompt = build_p
+    prompt = build_prompt(payload)
+    try:
+        resp = openai.ChatCompletion.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "system", "content": "You are a concise analyst."},
+                      {"role": "user", "content": prompt}],
+            temperature=0.0,
+            max_tokens=200,
+        )
+        answer = resp.choices[0].message.content
+        # Expect JSON output; simple validation:
+        result = json.loads(answer)
+        r.setex(cache_key, 30, json.dumps(result))   # cache 30 s
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+```
+
+### 11.3 Meta‑Learner Training (sklearn)
+
+```python
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import TimeSeriesSplit
+from sklearn.metrics import roc_auc_score
+
+# Load pre‑computed features + LLM outputs
+df = pd.read_parquet("training_features.parquet")
+X = df[["p_quant", "llm_confidence", "bias_up", "bias_down"]].values
+y = df["target_up"].astype(int).values
+
+tscv = TimeSeriesSplit(n_splits=5)
+aucs = []
+for train_idx, test_idx in tscv.split(X):
+    model = LogisticRegression(max_iter=500)
+    model.fit(X[train_idx], y[train_idx])
+    preds = model.predict_proba(X[test_idx])[:, 1]
+    aucs.append(roc_auc_score(y[test_idx], preds))
+
+print("Mean AUC:", np.mean(aucs))
+# Save model
+import joblib
+joblib.dump(model, "meta_learner.pkl")
+```
+
+---
+
+## 12. Quick‑Start Checklist
+
+| ✅ | Item |
+|----|------|
+| 1 | Create accounts & obtain API keys for Binance (or your chosen exchange), CryptoPanic, Twitter, OpenAI. |
+| 2 | Spin up a local Docker‑Compose stack: `kafka + zookeeper + redis + timescaledb + ingestion_worker + reasoner`. |
+| 3 | Verify that raw market candles appear in the `price_candle_5m` topic and land in TimescaleDB. |
+| 4 | Pull a handful of news items, run the reasoner, and confirm JSON output matches schema. |
+| 5 | Train a simple XGBoost on technical features; compute `p_quant`. |
+| 6 | Combine `p_quant` + LLM confidence in a logistic regression; evaluate on a hold‑out week. |
+| 7 | Connect the execution guard to Binance **testnet**; place a dummy order based on the decision engine. |
+| 8 | Set up Grafana dashboards: latency, P&L, confidence distribution, drawdown. |
+| 9 | Write a “kill‑switch” script that monitors daily loss and disables the Kafka producer if needed. |
+|10| Document every secret in Vault and rotate keys after the first week. |
+
+---
+
+### TL;DR
+
+1. **Collect** market, on‑chain, news, and social data → Kafka → TimescaleDB.  
+2. **Engineer** technical indicators + sentiment embeddings + event tags.  
+3. **Feed** a **retrieval‑augmented LLM** (GPT‑4‑Turbo or self‑hosted Llama‑2) with a concise JSON context; get bias + confidence.  
+4. **Fuse** the LLM output with a classic quantitative model via a lightweight meta‑learner.  
+5. **Execute** orders on a testnet, enforce strict risk limits, and log every decision.  
+6. **Backtest** rigorously, monitor drift, and retrain nightly.  
+
+With this modular stack you can start small (technical‑only) and progressively **layer in LLM reasoning**, while keeping the system auditable, testable, and safe for real capital. Happy coding—and may your trades be profitable!
